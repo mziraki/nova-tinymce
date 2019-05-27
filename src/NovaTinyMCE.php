@@ -2,13 +2,15 @@
 
 namespace Emilianotisato\NovaTinyMCE;
 
+use Laravel\Nova\Fields\Expandable;
 use Laravel\Nova\Fields\Field;
 
 class NovaTinyMCE extends Field
 {
-    
+    use Expandable;
+
     public $showOnIndex = false;
-    
+
     /**
      * The field's component.
      *
@@ -20,23 +22,21 @@ class NovaTinyMCE extends Field
     {
         parent::__construct($name, $attribute, $resolveCallback);
 
-        $this->withMeta(
-            [
+        $this->withMeta([
             'options' => [
-            'path_absolute' => '/',
-            'plugins' => [
-                'lists preview hr anchor pagebreak',
-                'wordcount fullscreen',
-                'contextmenu directionality',
-                'paste textcolor colorpicker textpattern'
+                'path_absolute' => '/',
+                'plugins' => [
+                    'lists preview hr anchor pagebreak',
+                    'wordcount fullscreen',
+                    'contextmenu directionality',
+                    'paste textcolor colorpicker textpattern',
+                ],
+                'toolbar' => 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link',
+                'relative_urls' => false,
+                'use_lfm' => false,
+                'lfm_url' => 'laravel-filemanager',
             ],
-            'toolbar' => 'undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link',
-            'relative_urls' => false,
-            'use_lfm' => false,
-            'lfm_url' => 'laravel-filemanager'
-            ]
-            ]
-        );
+        ]);
     }
 
     /**
@@ -50,11 +50,21 @@ class NovaTinyMCE extends Field
     public function options(array $options)
     {
         $currentOptions = $this->meta['options'];
-        
-        return $this->withMeta(
-            [
-            'options' => array_merge($currentOptions, $options)
-            ]
-        );
+
+        return $this->withMeta([
+            'options' => array_merge($currentOptions, $options),
+        ]);
+    }
+
+    /**
+     * Prepare the element for JSON serialization.
+     *
+     * @return array
+     */
+    public function jsonSerialize()
+    {
+        return array_merge(parent::jsonSerialize(), [
+            'shouldShow' => $this->shouldBeExpanded(),
+        ]);
     }
 }
